@@ -19,7 +19,7 @@ The type implements the DB interfaces (scanner / Value).  Those methods will res
 
 ## How to use: 
 
-Import the package, and use ge.Numeric as a type in your models. 
+Import the package, and use ge.Number as a type in your models. 
 This allows it to read: strings (numbers), integers, floats and booleans (cast to 0-1)
 
 
