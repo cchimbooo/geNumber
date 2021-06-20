@@ -1,6 +1,7 @@
 package ge
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -70,4 +71,42 @@ func (n *Number) UnmarshalJSON(bs []byte) error {
 // MarshalJSON implements Marshaler interface
 func (n Number) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.Float64())
+}
+
+// DATABASE Interfaces
+
+// Scan implements sql.Scanner interface
+func (n *Number) Scan(value interface{}) error {
+	switch value.(type) {
+	case int64:
+		*n = Number(value.(int64))
+	case float64:
+		*n = Number(value.(float64))
+	case string:
+		v := value.(string)
+		r, _ := regexp.Match("^\\d*\\.?(?:\\d*)?$", []byte(v))
+		if !r || v == "" {
+			return errors.New("value " + value.(string) + " is not numeric")
+		}
+		f, _ := strconv.ParseFloat(v, 64)
+		*n = Number(f)
+	case bool:
+		if value.(bool) {
+			*n = 1.
+		} else {
+			*n = 0.
+		}
+	default:
+		return errors.New("invalid type")
+	}
+	return nil
+}
+
+// Value return json value, implement driver.Valuer interface
+func (n Number) Value() (driver.Value, error) {
+
+	if n.Float64() == float64(n.Int()) {
+		return strconv.Itoa(n.Int()), nil
+	}
+	return n.String(), nil
 }
